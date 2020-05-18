@@ -11,6 +11,8 @@ DayStat::DayStat(){
 }
 
 DayStat::DayStat(int _cases, int _deaths){
+    cases = _cases;
+    deaths = _deaths;
 }
 
 DayStat::DayStat(const DayStat &d, double denominator){
@@ -60,6 +62,33 @@ int readcsv(Region*& region, const char* csvFileName){
 //  region: an array of Region. Each element stores the information of one country (or region).
 //  csvFileName: path to the csv file.
 //  retured value: the length of the region array.
+
+//  1. Load the CSV file
+    ifstream ifs(csvFileName);
+    if (!ifs)
+    {
+        return -1;
+    }
+    int csvLineCount = 0;
+    char line[2048];
+    while (ifs.getline(line,2048))
+    {
+        csvLineCount++;
+    }
+//  2. Allocate for an array of region;
+    char **lines = new char*[csvLineCount];
+    ifs.clear();
+    ifs.seekg(0, ios::beg);
+//  3. for each line in CSV filr: readline;
+    for (int i = 0; i < csvLineCount; i++)
+    {
+        ifs.getline(line,2048);
+        lines[i] = new char[strlen(line)+1];
+        strcpy(lines[i],line);
+    }
+    ifs.close();
+
+    return csvLineCount;
 }
 
 void writecsvs(const Region* region, int nRegions){
