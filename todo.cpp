@@ -5,9 +5,20 @@
 #include "todo.h"
 using namespace std;
 
+char* substring(char* source, int startIndex, int endIndex)
+{
+    int size = endIndex - startIndex + 1;
+    char* s = new char[size+1];
+    strncpy(s, source + startIndex, size); //you can read the documentation of strncpy online
+    s[size]  = '\0'; //make it null-terminated
+    return s;
+}
+
 //******** IMPLEMENTATION OF DayStat *******
 
 DayStat::DayStat(){
+    cases = 0;
+    deaths = 0;
 }
 
 DayStat::DayStat(int _cases, int _deaths){
@@ -26,10 +37,12 @@ double DayStat::mortalityRate() const {
 
 double DayStat::getcases() const {
 // retured value: cases.
+    return cases;
 }
 
 double DayStat::getdeaths() const {
 // retured value: deaths
+    return deaths;
 }
 
 //******** IMPLEMENTATION OF Region *******
@@ -38,6 +51,45 @@ Region::Region(){
 
 void Region::readline(char *line){
 // line: char array. A single line read from the csv file.
+    int commaCount = 0;
+    int curcases = 0;
+    int curdeaths = 0;
+    int lastCommaP = 0;
+    char* substr;
+    char* lsubstr;
+    int dayCount = 0;
+    raw = new DayStat[1024];
+    for (int i = 0; line[i] ; i++)
+    {
+
+        if (line[i] == ',')
+        {
+            commaCount += 1;
+            char * substr = substring(line,0,i-1);
+            if (commaCount == 1)
+            {
+                name = substr;
+            }
+            else if (commaCount == 2)
+            {
+                population = atoi(substr);
+            }
+            else if (commaCount == 3)
+            {
+                area = atoi(substr);
+            }
+            else if (commaCount >= 4 && commaCount % 2 != 0)
+            {
+                
+                raw[dayCount] = DayStat(atoi(lsubstr), atoi(substr));
+                dayCount += 1;
+            }
+            else{}
+            lastCommaP = i;
+            lsubstr = substr;
+        }
+    }
+    nday = dayCount;
 }
 
 Region::~Region(){
@@ -66,28 +118,26 @@ int readcsv(Region*& region, const char* csvFileName){
 //  1. Load the CSV file
     ifstream ifs(csvFileName);
     if (!ifs)
-    {
         return -1;
-    }
+
     int csvLineCount = 0;
     char line[2048];
-    while (ifs.getline(line,2048))
-    {
+    while (ifs.getline(line,2048)){
         csvLineCount++;
     }
+
 //  2. Allocate for an array of region;
-    char **lines = new char*[csvLineCount];
     ifs.clear();
     ifs.seekg(0, ios::beg);
+    region = new Region[csvLineCount * 2048];
 //  3. for each line in CSV filr: readline;
-    for (int i = 0; i < csvLineCount; i++)
+    for (int i = 1; i < csvLineCount; i++)
     {
         ifs.getline(line,2048);
-        lines[i] = new char[strlen(line)+1];
-        strcpy(lines[i],line);
+        region[csvLineCount].readline(line);
     }
+    
     ifs.close();
-
     return csvLineCount;
 }
 
