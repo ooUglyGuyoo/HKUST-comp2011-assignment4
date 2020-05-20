@@ -12,8 +12,8 @@ int main()
     Region *regions;
     int nRegions = 0;
     cout << "Reading the CSV file..." << endl;
-    const char* csvFileName = "pa4_data_short.csv";
-    //const char* csvFileName = "pa4_data.csv";
+    //const char* csvFileName = "pa4_data_short.csv";
+    const char* csvFileName = "pa4_data.csv";
 
     nRegions = readcsv(regions, csvFileName);
     

@@ -40,7 +40,7 @@ double DayStat::mortalityRate() const {
     if (getcases() != 0)
     {
         double mortality = deaths/cases;
-        return mortality;
+        return mortality*100;
     }
     else
         return 0;
@@ -70,9 +70,10 @@ void Region::readline(char *line){
     char* lsubstr;
     int dayCount = 0;
     raw = new DayStat[1024];
+    int icount = 0;
     for (int i = 0; line[i] ; i++)
     {
-        
+        icount += 1;
         if (line[i] == ',')
         {
             commaCount += 1;
@@ -104,6 +105,8 @@ void Region::readline(char *line){
         }
         else{}
     }
+    substr = substring(line,lastCommaP + 1,icount);
+    raw[dayCount] = DayStat(atoi(lsubstr), atoi(substr));
     nday = dayCount + 1;
     //cout << name << " " << population << " " << area << " " << nday << endl;
 }
@@ -113,14 +116,16 @@ Region::~Region(){
 
 void Region::normalizeByPopulation(){
     normPop = new DayStat[nday];
+    double populations = double(population) / 1000000;
     for (int i = 0; i < nday; i++)
-        normPop[i] = DayStat(raw[i], population);
+        normPop[i] = DayStat(raw[i], populations);
 }
 
 void Region::normalizeByArea(){
     normArea = new DayStat[nday];
+    double areas = double(area) / 1000;
     for (int i = 0; i < nday; i++)
-        normArea[i] = DayStat(raw[i], area);
+        normArea[i] = DayStat(raw[i], areas);
 }
 
 void Region::computeMortalityRate(){
@@ -135,16 +140,16 @@ void initialCSV (string name){
     ifstream ifs(name + filetype);
     if (ifs)
     {
+        ifs.close();
         remove((name + filetype).c_str());
     }
-    else{}
-    ifs.close();
+    else{
+        ifs.close();
+    }
 }
 
 void Region::write(Stat stat) const {
 // stat: one element of the Enum Stat and indicates which kind of data need to be stored in csv files. See definition of Stat. As you need to generate 7 csv files, this function will be called 7 times for each region in writecsvs().
-    //ofs.setf(ios::fixed);
-    //ofs.precision();
     if (stat == CASESRAW) /////////////////////////////////////////////////////////////
     {
         char* status = new char[16];
@@ -153,7 +158,7 @@ void Region::write(Stat stat) const {
         if (!ifs)
         {
             ofstream ofs(status);
-            ofs.setf(ios::fixed); ofs.precision(0);
+            ofs.setf(ios::fixed); ofs.precision();
             ofs << name;
             for (int i = 0; i < nday; i++)
             {
@@ -164,8 +169,7 @@ void Region::write(Stat stat) const {
         else
         {
             ofstream ofs(status, fstream::app);
-            ofs.setf(ios::fixed);
-            ofs.precision(0);
+            ofs.setf(ios::fixed); ofs.precision();
             ofs << name;
             for (int i = 0; i < nday; i++)
             {
@@ -184,7 +188,7 @@ void Region::write(Stat stat) const {
         if (!ifs)
         {
             ofstream ofs(status);
-            ofs.setf(ios::fixed); ofs.precision(0);
+            ofs.setf(ios::fixed); ofs.precision();
             ofs << name;
             for (int i = 0; i < nday; i++)
                 ofs << "," << raw[i].getdeaths();
@@ -193,8 +197,7 @@ void Region::write(Stat stat) const {
         else
         {
             ofstream ofs(status, fstream::app);
-            ofs.setf(ios::fixed);
-            ofs.precision(0);
+            ofs.setf(ios::fixed);ofs.precision();
             ofs << name;
             for (int i = 0; i < nday; i++)
             {
