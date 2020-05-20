@@ -5,6 +5,8 @@
 #include "todo.h"
 using namespace std;
 
+string filetype = ".csv";
+
 char* substring(char* source, int startIndex, int endIndex)
 {
     int size = endIndex - startIndex + 1;
@@ -70,6 +72,7 @@ void Region::readline(char *line){
     raw = new DayStat[1024];
     for (int i = 0; line[i] ; i++)
     {
+        
         if (line[i] == ',')
         {
             commaCount += 1;
@@ -101,31 +104,23 @@ void Region::readline(char *line){
         }
         else{}
     }
-    nday = dayCount;
-    cout << name << " " << population << " " << area << " " << nday << endl;
+    nday = dayCount + 1;
+    //cout << name << " " << population << " " << area << " " << nday << endl;
 }
 
 Region::~Region(){
 }
 
 void Region::normalizeByPopulation(){
-    normPop = new DayStat[nday*2];
+    normPop = new DayStat[nday];
     for (int i = 0; i < nday; i++)
-    {
-        double curcase = raw[i].getcases();
-        double curdeath = raw[i].getdeaths();
-        normPop[i] = DayStat(curcase / population, curdeath / population);
-    }
+        normPop[i] = DayStat(raw[i], population);
 }
 
 void Region::normalizeByArea(){
-    normArea = new DayStat[nday*2];
+    normArea = new DayStat[nday];
     for (int i = 0; i < nday; i++)
-    {
-        double curcase = raw[i].getcases();
-        double curdeath = raw[i].getdeaths();
-        normArea[i] = DayStat(curcase / area, curdeath / area);
-    }
+        normArea[i] = DayStat(raw[i], area);
 }
 
 void Region::computeMortalityRate(){
@@ -136,54 +131,210 @@ void Region::computeMortalityRate(){
     }
 }
 
+void initialCSV (string name){
+    ifstream ifs(name + filetype);
+    if (ifs)
+    {
+        remove((name + filetype).c_str());
+    }
+    else{}
+    ifs.close();
+}
+
 void Region::write(Stat stat) const {
 // stat: one element of the Enum Stat and indicates which kind of data need to be stored in csv files. See definition of Stat. As you need to generate 7 csv files, this function will be called 7 times for each region in writecsvs().
-    if (stat == CASESRAW)
+    //ofs.setf(ios::fixed);
+    //ofs.precision();
+    if (stat == CASESRAW) /////////////////////////////////////////////////////////////
     {
-        cout << name << " " << population << " " << area << " " << nday << endl;
         char* status = new char[16];
-        strcpy(status,"CASESRAW");
-        cout << "open input file stream" << endl;
-        ifstream iifs(status);
-        if (iifs)
-            remove(status);
-        cout << "close input file stream" << endl;
-        iifs.close();
-        cout << "open output file stream" << endl;
-        ofstream oofs(status);
-        cout << name ;
-        for (int i = 0; i < nday; i++)
+        strcpy(status,"CASESRAW.csv" );
+        ifstream ifs(status);
+        if (!ifs)
         {
-            oofs << "," << raw[i].getcases();
+            ofstream ofs(status);
+            ofs.setf(ios::fixed); ofs.precision(0);
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+            {
+                ofs << "," << raw[i].getcases();
+            }
+            ofs << endl; ofs.close();  
         }
-        oofs << endl;
-        cout << "close output file stream" << endl;
-        oofs.close();
+        else
+        {
+            ofstream ofs(status, fstream::app);
+            ofs.setf(ios::fixed);
+            ofs.precision(0);
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+            {
+                ofs << "," << raw[i].getcases();
+            }
+            ofs << endl; ofs.close();
+        }
+        ifs.close();
         delete [] status;
     }
-    else if (stat == DEATHSRAW)
+    else if (stat == DEATHSRAW) /////////////////////////////////////////////////////////////
     {
-        /* code */
+        char* status = new char[16];
+        strcpy(status,"DEATHSRAW.csv" );
+        ifstream ifs(status);
+        if (!ifs)
+        {
+            ofstream ofs(status);
+            ofs.setf(ios::fixed); ofs.precision(0);
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << raw[i].getdeaths();
+            ofs << endl; ofs.close();
+        }
+        else
+        {
+            ofstream ofs(status, fstream::app);
+            ofs.setf(ios::fixed);
+            ofs.precision(0);
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+            {
+                ofs << "," << raw[i].getdeaths();
+            }
+            ofs << endl;
+            ofs.close();
+        }
+        ifs.close();
+        delete [] status;
     }
-    else if (stat == CASESPOP)
+    else if (stat == CASESPOP) /////////////////////////////////////////////////////////////
     {
-        /* code */
+        char* status = new char[16];
+        strcpy(status,"CASESPOP.csv" );
+        ifstream ifs(status);
+        if (!ifs)
+        {
+            ofstream ofs(status);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << normPop[i].getcases();
+            ofs << endl; ofs.close();  
+        }
+        else
+        {
+            ofstream ofs(status, fstream::app);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << normPop[i].getcases();
+            ofs << endl; ofs.close();
+        }
+        ifs.close();
+        delete [] status;
     }
-    else if (stat == DEATHSPOP)
+    else if (stat == DEATHSPOP) ////////////////////////////////////////////////////////////
     {
-        /* code */
+        char* status = new char[16];
+        strcpy(status,"DEATHSPOP.csv" );
+        ifstream ifs(status);
+        if (!ifs)
+        {
+            ofstream ofs(status);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << normPop[i].getdeaths();
+            ofs << endl; ofs.close();  
+        }
+        else
+        {
+            ofstream ofs(status, fstream::app);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << normPop[i].getdeaths();
+            ofs << endl; ofs.close();
+        }
+        ifs.close();
+        delete [] status;
     }
-    else if (stat == CASESAREA)
+    else if (stat == CASESAREA) /////////////////////////////////////////////////////////////
     {
-        /* code */
+        char* status = new char[16];
+        strcpy(status,"CASESAREA.csv" );
+        ifstream ifs(status);
+        if (!ifs)
+        {
+            ofstream ofs(status);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << normArea[i].getcases();
+            ofs << endl; ofs.close();  
+        }
+        else
+        {
+            ofstream ofs(status, fstream::app);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << normArea[i].getcases();
+            ofs << endl; ofs.close();
+        }
+        ifs.close();
+        delete [] status;
     }
-    else if (stat == DEATHSAREA)
+    else if (stat == DEATHSAREA) /////////////////////////////////////////////////////////////
     {
-        /* code */
+        char* status = new char[16];
+        strcpy(status,"DEATHSAREA.csv" );
+        ifstream ifs(status);
+        if (!ifs)
+        {
+            ofstream ofs(status);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << normArea[i].getdeaths();
+            ofs << endl; ofs.close();  
+        }
+        else
+        {
+            ofstream ofs(status, fstream::app);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << normArea[i].getdeaths();
+            ofs << endl; ofs.close();
+        }
+        ifs.close();
+        delete [] status;
     }
-    else if (stat == MORTALITY)
+    else if (stat == MORTALITY) /////////////////////////////////////////////////////////////
     {
-        /* code */
+        char* status = new char[16];
+        strcpy(status,"MORTALITY.csv" );
+        ifstream ifs(status);
+        if (!ifs)
+        {
+            ofstream ofs(status);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << mortality[i];
+            ofs << endl; ofs.close();  
+        }
+        else
+        {
+            ofstream ofs(status, fstream::app);
+            ofs.setf(ios::fixed); ofs.precision();
+            ofs << name;
+            for (int i = 0; i < nday; i++)
+                ofs << "," << mortality[i];
+            ofs << endl; ofs.close();
+        }
+        ifs.close();
+        delete [] status;
     }
     else{}
 }
@@ -209,23 +360,35 @@ int readcsv(Region*& region, const char* csvFileName){
 //  2. Allocate for an array of region;
     ifs.clear();
     ifs.seekg(0, ios::beg);
-    region = new Region[csvLineCount * 2048];
+    region = new Region[csvLineCount];
 //  3. for each line in CSV filr: readline;
     for (int i = 0; i < csvLineCount ; i++)
     {
         ifs.getline(line,2048);
-        if (i != 0)
-        {
-            region[csvLineCount].readline(line);
-        }
+        if (i == 0)
+            continue;
+        region[i - 1].readline(line);
+        
     }
     ifs.close();
-    return csvLineCount;
+    return csvLineCount - 1;
 }
 
 void writecsvs(const Region* region, int nRegions){
 //  region: an array of Region. Each element stores the information of one country (or region).
 //  nRegions: the length of the region array.
+
+    //Initialize the folder, delete all existing file:
+
+    initialCSV("CASESRAW");
+    initialCSV("DEATHSRAW");
+    initialCSV("CASESPOP");
+    initialCSV("DEATHSPOP");
+    initialCSV("CASESAREA");
+    initialCSV("DEATHSAREA");
+    initialCSV("MORTALITY");
+
+    // Writer CSV files
     for (int i = 0; i < nRegions; i++){
         region[i].write(CASESRAW);
     }
