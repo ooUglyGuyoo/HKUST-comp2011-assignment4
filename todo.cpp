@@ -73,9 +73,10 @@ void Region::readline(char *line){
         if (line[i] == ',')
         {
             commaCount += 1;
-            char * substr = substring(line,lastCommaP+1,i-1);
+            char * substr = substring(line,lastCommaP + 1,i-1);
             if (commaCount == 1)
             {
+                substr = substring(line,lastCommaP,i-1);
                 name = substr;
                 //cout << substr << endl;
             }
@@ -101,6 +102,7 @@ void Region::readline(char *line){
         else{}
     }
     nday = dayCount;
+    cout << name << " " << population << " " << area << " " << nday << endl;
 }
 
 Region::~Region(){
@@ -138,20 +140,25 @@ void Region::write(Stat stat) const {
 // stat: one element of the Enum Stat and indicates which kind of data need to be stored in csv files. See definition of Stat. As you need to generate 7 csv files, this function will be called 7 times for each region in writecsvs().
     if (stat == CASESRAW)
     {
+        cout << name << " " << population << " " << area << " " << nday << endl;
         char* status = new char[16];
         strcpy(status,"CASESRAW");
-        ifstream ifs(status);
-        if (ifs)
+        cout << "open input file stream" << endl;
+        ifstream iifs(status);
+        if (iifs)
             remove(status);
-        ifs.close();
-        ofstream ofs(status);
-        cout << nday << endl;
+        cout << "close input file stream" << endl;
+        iifs.close();
+        cout << "open output file stream" << endl;
+        ofstream oofs(status);
+        cout << name ;
         for (int i = 0; i < nday; i++)
         {
-            ofs << "," << raw[i].getcases();
+            oofs << "," << raw[i].getcases();
         }
-        ofs << endl;
-        ofs.close();
+        oofs << endl;
+        cout << "close output file stream" << endl;
+        oofs.close();
         delete [] status;
     }
     else if (stat == DEATHSRAW)
@@ -207,9 +214,11 @@ int readcsv(Region*& region, const char* csvFileName){
     for (int i = 0; i < csvLineCount ; i++)
     {
         ifs.getline(line,2048);
-        region[csvLineCount].readline(line);
+        if (i != 0)
+        {
+            region[csvLineCount].readline(line);
+        }
     }
-    
     ifs.close();
     return csvLineCount;
 }
