@@ -91,6 +91,7 @@ void Region::readline(char *line){
             char * substr = substring(line,lastCommaP + 1,i-1);
             if (commaCount == 1)
             {
+                delete [] substr;
                 substr = substring(line,lastCommaP,i-1);
                 name = substr;
                 //cout << substr << endl;
@@ -109,20 +110,30 @@ void Region::readline(char *line){
                 //cout << dayCount << " " << atoi(lsubstr) << " " <<  atoi(substr) << endl;
                 raw[dayCount] = DayStat(atoi(lsubstr), atoi(substr));
                 dayCount += 1;
+                delete [] lsubstr;
+                delete [] substr;
             }
             else{}
             lastCommaP = i;
             lsubstr = substr;
         }
         else{}
+        delete [] substr;
     }
     substr = substring(line,lastCommaP + 1,icount);
     raw[dayCount] = DayStat(atoi(lsubstr), atoi(substr));
     nday = dayCount + 1;
+    delete [] lsubstr;
+    delete [] substr;
     //cout << name << " " << population << " " << area << " " << nday << endl;
 }
 
 Region::~Region(){
+    delete [] raw;
+    delete [] normPop;
+    delete [] normArea;
+    delete [] name;
+    delete [] mortality;
 }
 
 void Region::normalizeByPopulation(){
