@@ -69,7 +69,18 @@ void Region::readline(char *line){
     char* substr;
     char* lsubstr;
     int dayCount = 0;
-    raw = new DayStat[1024];
+    for (int i = 0; line[i] ; i++)
+    {
+        if (line[i] == ',')
+            commaCount += 1;
+        
+        if (line[i] == ',' && commaCount >= 4 && commaCount % 2 != 0)
+            dayCount += 1;
+    }
+    nday = dayCount + 1;
+    raw = new DayStat[nday];
+    commaCount = 0;
+    dayCount = 0;
     int icount = 0;
     for (int i = 0; line[i] ; i++)
     {
